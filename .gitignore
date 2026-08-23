@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pt
+*.pth
+*.onnx
+*.bin
+*.h5
+*.mp4
+*.avi
+*.jpg
+*.png
+.vscode/
