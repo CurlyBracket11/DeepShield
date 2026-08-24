@@ -30,3 +30,5 @@ Thumbs.db
 
 # Logs
 *.log
+# Old video experiment checkpoints
+notebooks/video/models/video/*.pth

@@ -1,0 +1,23 @@
+{
+    "project": "DeepShield-AI",
+    "modality": "Video",
+    "architecture": "ResNet18 + LSTM",
+    "backbone": "ResNet18",
+    "temporal_model": "LSTM",
+    "num_frames": 16,
+    "frame_size": 224,
+    "input_channels": 3,
+    "num_classes": 2,
+    "classes": {
+        "0": "FAKE",
+        "1": "REAL"
+    },
+    "device": "cuda",
+    "checkpoint": "models\\video\\video_resnet18_lstm_balanced_best.pth",
+    "validation_accuracy": 0.5,
+    "validation_loss": 0.7013018429279327,
+    "test_accuracy": 0.4375,
+    "test_precision": 0.42857142857142855,
+    "test_recall": 0.375,
+    "test_f1": 0.4
+}
