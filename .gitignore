@@ -32,3 +32,7 @@ Thumbs.db
 *.log
 # Old video experiment checkpoints
 notebooks/video/models/video/*.pth
+
+# Python cache
+__pycache__/
+*.pyc
