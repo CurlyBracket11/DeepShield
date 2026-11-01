@@ -1,0 +1,20 @@
+DEEPSHIELD-AI — VIDEO AUTHENTICITY REPORT
+======================================================================
+
+Videos evaluated : 10
+Accuracy         : 50.00%
+Average Risk     : 52.99
+Average Fake Confidence : 0.5299
+Average Real Confidence : 0.4701
+
+======================================================================
+vs1.mp4 | True: FAKE | Pred: FAKE | Risk: 58.30 | MEDIUM RISK
+vs10.mp4 | True: FAKE | Pred: FAKE | Risk: 55.59 | MEDIUM RISK
+vs11.mp4 | True: FAKE | Pred: REAL | Risk: 46.22 | MEDIUM RISK
+vs12.mp4 | True: FAKE | Pred: FAKE | Risk: 55.71 | MEDIUM RISK
+vs13.mp4 | True: FAKE | Pred: FAKE | Risk: 51.44 | MEDIUM RISK
+v1.mp4 | True: REAL | Pred: FAKE | Risk: 53.16 | MEDIUM RISK
+v10.mp4 | True: REAL | Pred: FAKE | Risk: 54.37 | MEDIUM RISK
+v11.mp4 | True: REAL | Pred: REAL | Risk: 46.30 | MEDIUM RISK
+v12.mp4 | True: REAL | Pred: FAKE | Risk: 57.52 | MEDIUM RISK
+v13.mp4 | True: REAL | Pred: FAKE | Risk: 51.33 | MEDIUM RISK

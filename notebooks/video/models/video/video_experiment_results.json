@@ -1,0 +1,12 @@
+{
+    "baseline_test_accuracy": 0.3125,
+    "balanced_validation_accuracy": 0.5,
+    "balanced_validation_loss": 0.7013018429279327,
+    "balanced_test_accuracy": 0.4375,
+    "balanced_test_precision": 0.42857142857142855,
+    "balanced_test_recall": 0.375,
+    "balanced_test_f1": 0.4,
+    "average_fake_confidence": 0.5136234760284424,
+    "average_real_confidence": 0.4863765239715576,
+    "average_risk_score": 51.36235046386719
+}

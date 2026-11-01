@@ -1,0 +1,11 @@
+{
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 0.375,
+    "f1_score": 0.42857142857142855,
+    "roc_auc": 0.609375,
+    "average_fake_confidence": 0.52510625,
+    "average_real_confidence": 0.47489375,
+    "average_risk_score": 52.510625,
+    "test_samples": 16
+}

@@ -1,0 +1,22 @@
+{
+    "model_name": "DeepShield-AI Video Authenticity Model",
+    "architecture": "ResNet18 + LSTM",
+    "input_frames": 16,
+    "input_size": [
+        224,
+        224
+    ],
+    "classes": {
+        "0": "FAKE",
+        "1": "REAL"
+    },
+    "best_initial_checkpoint": "models/video/video_resnet18_lstm_best.pth",
+    "best_balanced_checkpoint": "models/video/video_resnet18_lstm_balanced_best.pth",
+    "test_samples": 16,
+    "test_accuracy": 0.5,
+    "test_precision": 0.5,
+    "test_recall": 0.375,
+    "test_f1": 0.4286,
+    "test_roc_auc": 0.6094,
+    "status": "development_baseline"
+}
