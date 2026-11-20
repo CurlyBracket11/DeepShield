@@ -3,10 +3,23 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from pathlib import Path
 import tempfile
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from ai.qr.qr_analyzer import QRAnalyzer
 from ai.photo.inference import predict_photo
 
 app = FastAPI(title="DeepShield API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 analyzer = QRAnalyzer()
 
