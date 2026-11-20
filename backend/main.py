@@ -1,4 +1,4 @@
-
+from services.assistant.assistant_service import assistant_service
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pathlib import Path
 import tempfile
@@ -9,6 +9,18 @@ from ai.photo.inference import predict_photo
 app = FastAPI(title="DeepShield API")
 
 analyzer = QRAnalyzer()
+
+def attach_assistant(result: dict) -> dict:
+    try:
+        assistant_result = assistant_service.analyze(result)
+        result["assistant"] = assistant_result
+    except Exception as e:
+        result["assistant"] = {
+            "status": "unavailable",
+            "message": str(e)
+        }
+
+    return result
 
 
 @app.get("/health")
@@ -51,7 +63,11 @@ async def analyze_qr(file: UploadFile = File(...)):
             temp_file.write(image_data)
             temp_path = temp_file.name
 
-        return analyzer.analyze(temp_path)
+        result = analyzer.analyze(temp_path)
+        result["modality"] = "qr"
+        result["filename"] = file.filename
+
+        return attach_assistant(result)
 
     except Exception as e:
         raise HTTPException(
@@ -98,11 +114,10 @@ async def analyze_photo(file: UploadFile = File(...)):
 
         result = predict_photo(temp_path)
 
-        return {
-            "modality": "photo",
-            "filename": file.filename,
-            **result
-        }
+        result["modality"] = "photo"
+        result["filename"] = file.filename
+
+        return attach_assistant(result)
 
     except Exception as e:
         raise HTTPException(
@@ -150,7 +165,11 @@ async def analyze_document_endpoint(file: UploadFile = File(...)):
 
         from ai.document.document_service import analyze_document
 
-        return analyze_document(temp_path)
+        result = analyze_document(temp_path)
+        result["modality"] = "document"
+        result["filename"] = file.filename
+
+        return attach_assistant(result)
 
     except Exception as e:
         raise HTTPException(

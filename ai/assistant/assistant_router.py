@@ -147,7 +147,7 @@ class AssistantRouter:
             except Exception as error:
 
                 print(
-                    f"Voice output failed: {error}"
+                    f"Voice playback error: {error}"
                 )
 
         # ----------------------------------------------------

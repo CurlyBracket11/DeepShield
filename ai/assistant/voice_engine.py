@@ -1,128 +1,48 @@
-# ============================================================
-# DEEPSHIELD-AI — VOICE ENGINE
-# ============================================================
+import win32com.client
+import threading
 
-import pyttsx3
-
-
-# ============================================================
-# VOICE ENGINE
-# ============================================================
 
 class VoiceEngine:
 
     def __init__(self):
+        self.lock = threading.Lock()
+        self.speaker = win32com.client.Dispatch("SAPI.SpVoice")
 
-        self.engine = pyttsx3.init()
+        self.speaker.Rate = 0
+        self.speaker.Volume = 100
 
-        # ----------------------------------------------------
-        # Voice configuration
-        # ----------------------------------------------------
+        print("DeepShield SAPI Voice Engine initialized successfully.")
 
-        self.engine.setProperty(
-            "rate",
-            145
-        )
-
-        self.engine.setProperty(
-            "volume",
-            1.0
-        )
-
-        self._configure_voice()
-
-    # --------------------------------------------------------
-    # Configure available voice
-    # --------------------------------------------------------
-
-    def _configure_voice(self):
-
-        voices = self.engine.getProperty(
-            "voices"
-        )
-
-        if not voices:
-            return
-
-        # Prefer an English voice when available
-
-        selected_voice = None
-
-        for voice in voices:
-
-            voice_text = (
-                f"{voice.id} "
-                f"{voice.name}"
-            ).lower()
-
-            if "zira" in voice_text:
-                selected_voice = voice.id
-                break
-
-        if selected_voice is None:
-            selected_voice = voices[0].id
-
-        self.engine.setProperty(
-            "voice",
-            selected_voice
-        )
-
-    # --------------------------------------------------------
-    # Speak
-    # --------------------------------------------------------
-
-    def speak(
-        self,
-        text: str
-    ):
-
+    def speak(self, text):
         if not text:
             return
 
-        print()
-        print(
-            "DeepShield Assistant:"
-        )
+        with self.lock:
+            try:
+                print("\nDeepShield Assistant:")
+                print(text)
 
-        print(
-            text
-        )
+                self.speaker.Speak(text)
 
-        self.engine.say(
-            text
-        )
-
-        self.engine.runAndWait()
-
-    # --------------------------------------------------------
-    # Stop voice
-    # --------------------------------------------------------
+            except Exception as error:
+                print(f"Voice playback error: {error}")
 
     def stop(self):
+        with self.lock:
+            try:
+                self.speaker.Speak(
+                    "",
+                    3  # Purge currently queued speech
+                )
+            except Exception:
+                pass
 
-        self.engine.stop()
-
-
-# ============================================================
-# BASIC TEST
-# ============================================================
 
 if __name__ == "__main__":
 
-    print("=" * 70)
-    print("DEEPSHIELD-AI — VOICE ENGINE")
-    print("=" * 70)
-
     voice = VoiceEngine()
 
-    voice.speak(
-        "Hello. I am the DeepShield security assistant. "
-        "Your multimodal security analysis is ready."
-    )
-
-    print()
-    print(
-        "Voice test completed."
-    )
-
-    print("=" * 70)
+    voice.speak("DeepShield AI voice system is working correctly.")
+    voice.speak("This is the second voice test.")
+    voice.speak("This is the third voice test.")
+    voice.speak("All consecutive voice playback tests are complete.")
