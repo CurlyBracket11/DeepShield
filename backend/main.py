@@ -1,3 +1,4 @@
+import os
 from services.assistant.assistant_service import assistant_service
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from pathlib import Path
@@ -13,8 +14,12 @@ app = FastAPI(title="DeepShield API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
+        origin.strip()
+        for origin in os.getenv(
+            "CORS_ORIGINS",
+            "http://localhost:3000,http://127.0.0.1:3000"
+        ).split(",")
+        if origin.strip()
     ],
     allow_credentials=True,
     allow_methods=["*"],

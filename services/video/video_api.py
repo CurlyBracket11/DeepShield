@@ -1,3 +1,4 @@
+import os
 # ============================================================
 # DEEPSHIELD-AI — VIDEO API
 # ============================================================
@@ -11,6 +12,7 @@ if str(VIDEO_DIR) not in sys.path:
     sys.path.insert(0, str(VIDEO_DIR))
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from video_inference import VideoInference
 
@@ -23,6 +25,22 @@ app = FastAPI(
     title="DeepShield-AI Video Service",
     description="Video authenticity and deepfake risk analysis",
     version="1.0.0"
+)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        origin.strip()
+        for origin in os.getenv(
+            "CORS_ORIGINS",
+            "http://localhost:3000,http://127.0.0.1:3000"
+        ).split(",")
+        if origin.strip()
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

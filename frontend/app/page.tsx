@@ -1,253 +1,247 @@
+
+import Link from "next/link";
+import {
+  ArrowUpRight,
+  Image,
+  QrCode,
+  FileText,
+  Video,
+  Bot,
+  ShieldCheck,
+  ScanSearch,
+  Sparkles,
+} from "lucide-react";
+
+const modules = [
+  {
+    number: "01",
+    name: "Photo Analysis",
+    description:
+      "Examine images for signs of AI generation and potentially manipulated visual content.",
+    href: "/photo",
+    icon: Image,
+    detail: "IMAGE INTELLIGENCE",
+  },
+  {
+    number: "02",
+    name: "QR Analysis",
+    description:
+      "Decode QR codes, inspect embedded destinations and identify suspicious links.",
+    href: "/qr",
+    icon: QrCode,
+    detail: "LINK INSPECTION",
+  },
+  {
+    number: "03",
+    name: "Document Analysis",
+    description:
+      "Extract document information and examine content for potentially suspicious indicators.",
+    href: "/document",
+    icon: FileText,
+    detail: "DOCUMENT FORENSICS",
+  },
+  {
+    number: "04",
+    name: "Video Analysis",
+    description:
+      "Inspect video content for signs of synthetic or manipulated media.",
+    href: "/video",
+    icon: Video,
+    detail: "VIDEO INTELLIGENCE",
+  },
+];
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#080b12] text-white">
-      <div className="flex min-h-screen">
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-[1440px] px-6 py-8 md:px-10 md:py-10 lg:px-12">
 
-        {/* Sidebar */}
-        <aside className="w-64 border-r border-white/10 bg-[#0b0f17] p-6">
-          <h1 className="text-2xl font-bold tracking-wide">
-            <span className="text-emerald-400">◈</span> DeepShield
-          </h1>
-
-          <p className="mt-2 text-xs tracking-widest text-gray-500">
-            AI SECURITY INTELLIGENCE
-          </p>
-
-          <nav className="mt-12 space-y-2">
-            <div className="rounded-xl bg-emerald-400/10 px-4 py-3 text-emerald-400">
-              ◫ Dashboard
-            </div>
-
-            <div className="px-4 py-3 text-gray-400 hover:text-white">
-              ◈ Photo Analysis
-            </div>
-
-            <div className="px-4 py-3 text-gray-400 hover:text-white">
-              ▣ QR Analysis
-            </div>
-
-            <div className="px-4 py-3 text-gray-400 hover:text-white">
-              ▤ Document Analysis
-            </div>
-
-            <div className="px-4 py-3 text-gray-400 hover:text-white">
-              ▷ Video Analysis
-            </div>
-
-            <div className="px-4 py-3 text-gray-400 hover:text-white">
-              ◉ AI Assistant
-            </div>
-          </nav>
-
-          <div className="mt-16 rounded-xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-            <p className="text-sm font-medium text-emerald-400">
-              System Status
+        {/* Page heading */}
+        <header className="flex flex-col justify-between gap-5 border-b border-[#dedfd5] pb-7 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-[10px] font-semibold tracking-[2.5px] text-[#718174]">
+              DEEPSHIELD / WORKSPACE
             </p>
-
-            <div className="mt-3 flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400"></span>
-              <span className="text-sm text-gray-400">All systems operational</span>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Dashboard */}
-        <section className="flex-1 p-8">
-
-          {/* Top Bar */}
-          <header className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold">Security Dashboard</h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Welcome to DeepShield AI Intelligence Platform
-              </p>
-            </div>
-
-            <div className="rounded-full border border-white/10 bg-[#111722] px-4 py-2 text-sm text-gray-400">
-              ● System Secure
-            </div>
-          </header>
-
-          {/* Welcome Banner */}
-          <div className="mt-8 rounded-2xl border border-emerald-400/20 bg-gradient-to-r from-emerald-500/10 to-cyan-500/5 p-8">
-            <p className="text-sm font-medium tracking-widest text-emerald-400">
-              MULTIMODAL THREAT INTELLIGENCE
+            <h2 className="mt-3 text-3xl font-semibold tracking-[-1.2px] text-[#202b23] md:text-[38px]">
+              Overview
+            </h2>
+            <p className="mt-2 text-sm text-[#747c72]">
+              Your workspace for multimodal security analysis.
             </p>
-
-            <h3 className="mt-3 text-3xl font-bold">
-              Analyze. Detect. Protect.
-            </h3>
-
-            <p className="mt-3 max-w-2xl text-gray-400">
-              Analyze images, documents, QR codes and videos using AI-powered
-              security intelligence to identify potentially suspicious content.
-            </p>
-
-            <button className="mt-6 rounded-lg bg-emerald-400 px-5 py-3 font-semibold text-black transition hover:bg-emerald-300">
-              Start New Analysis →
-            </button>
           </div>
 
-          {/* Stats */}
-          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-
-            {[
-              ["Total Analyses", "1,284", "+12.8%"],
-              ["Threats Detected", "86", "Security alerts"],
-              ["Safe Files", "1,198", "Successfully analyzed"],
-              ["Detection Rate", "96.8%", "AI performance"],
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-white/10 bg-[#101620] p-6 transition hover:border-emerald-400/30"
-              >
-                <p className="text-sm text-gray-500">{stat[0]}</p>
-
-                <h3 className="mt-3 text-3xl font-bold">{stat[1]}</h3>
-
-                <p className="mt-2 text-sm text-emerald-400">{stat[2]}</p>
-              </div>
-            ))}
+          <div className="flex items-center gap-2 text-xs text-[#718174]">
+            <span className="h-2 w-2 rounded-full bg-[#91a78b]" />
+            Analysis workspace
           </div>
+        </header>
 
-          {/* Analysis Modules */}
-          <div className="mt-10">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold">Security Analysis Modules</h3>
-
-              <span className="text-sm text-gray-500">
-                Choose an analysis module
-              </span>
-            </div>
-
-            <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-
-              {/* Photo */}
-              <div className="rounded-2xl border border-white/10 bg-[#101620] p-6 transition hover:-translate-y-1 hover:border-cyan-400/40">
-                <div className="text-3xl">◈</div>
-
-                <h4 className="mt-5 text-lg font-semibold">Photo Analysis</h4>
-
-                <p className="mt-2 text-sm leading-6 text-gray-400">
-                  Detect AI-generated images and identify suspicious visual content.
-                </p>
-
-                <button className="mt-5 text-sm font-medium text-cyan-400">
-                  Analyze Image →
-                </button>
+        {/* Main introduction */}
+        <section className="relative mt-8 overflow-hidden bg-[#e7ebe1]">
+          <div className="grid min-h-[330px] lg:grid-cols-[1.35fr_0.65fr]">
+            <div className="flex flex-col justify-center px-7 py-10 md:px-12 md:py-14">
+              <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[2.2px] text-[#637965]">
+                <ShieldCheck size={15} />
+                MULTIMODAL THREAT INTELLIGENCE
               </div>
 
-              {/* QR */}
-              <div className="rounded-2xl border border-white/10 bg-[#101620] p-6 transition hover:-translate-y-1 hover:border-emerald-400/40">
-                <div className="text-3xl">▣</div>
+              <h3 className="mt-6 max-w-[600px] text-[38px] font-semibold leading-[1.12] tracking-[-1.8px] text-[#25372b] md:text-[52px]">
+                Understand what
+                <br />
+                you&apos;re looking at.
+              </h3>
 
-                <h4 className="mt-5 text-lg font-semibold">QR Analysis</h4>
-
-                <p className="mt-2 text-sm leading-6 text-gray-400">
-                  Inspect QR codes and identify potentially unsafe links or content.
-                </p>
-
-                <button className="mt-5 text-sm font-medium text-emerald-400">
-                  Scan QR →
-                </button>
-              </div>
-
-              {/* Document */}
-              <div className="rounded-2xl border border-white/10 bg-[#101620] p-6 transition hover:-translate-y-1 hover:border-violet-400/40">
-                <div className="text-3xl">▤</div>
-
-                <h4 className="mt-5 text-lg font-semibold">Document Analysis</h4>
-
-                <p className="mt-2 text-sm leading-6 text-gray-400">
-                  Examine documents and extract information for security analysis.
-                </p>
-
-                <button className="mt-5 text-sm font-medium text-violet-400">
-                  Analyze Document →
-                </button>
-              </div>
-
-              {/* Video */}
-              <div className="rounded-2xl border border-white/10 bg-[#101620] p-6 transition hover:-translate-y-1 hover:border-amber-400/40">
-                <div className="text-3xl">▷</div>
-
-                <h4 className="mt-5 text-lg font-semibold">Video Analysis</h4>
-
-                <p className="mt-2 text-sm leading-6 text-gray-400">
-                  Analyze video content for manipulated or potentially synthetic media.
-                </p>
-
-                <button className="mt-5 text-sm font-medium text-amber-400">
-                  Analyze Video →
-                </button>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Bottom section */}
-          <div className="mt-10 grid grid-cols-1 gap-5 lg:grid-cols-2">
-
-            <div className="rounded-2xl border border-white/10 bg-[#101620] p-6">
-              <h3 className="text-lg font-semibold">AI Security Assistant</h3>
-
-              <p className="mt-3 text-sm leading-6 text-gray-400">
-                Your intelligent security assistant helps interpret analysis results,
-                explain potential risks, and provide security insights.
+              <p className="mt-5 max-w-[510px] text-sm leading-7 text-[#68766a]">
+                Explore images, QR codes, documents and videos through
+                dedicated analysis tools designed to help identify
+                potentially suspicious digital content.
               </p>
 
-              <button className="mt-5 rounded-lg border border-emerald-400/30 px-4 py-2 text-sm text-emerald-400 transition hover:bg-emerald-400/10">
-                Open Assistant →
-              </button>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-[#101620] p-6">
-              <h3 className="text-lg font-semibold">Recent Activity</h3>
-
-              <div className="mt-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                  <span className="text-sm text-gray-400">
-                    Photo analysis module
-                  </span>
-
-                  <span className="text-xs text-emerald-400">Ready</span>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                  <span className="text-sm text-gray-400">
-                    QR analysis module
-                  </span>
-
-                  <span className="text-xs text-emerald-400">Ready</span>
-                </div>
-
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                  <span className="text-sm text-gray-400">
-                    Document analysis module
-                  </span>
-
-                  <span className="text-xs text-emerald-400">Ready</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">
-                    Video analysis module
-                  </span>
-
-                  <span className="text-xs text-amber-400">Integration Pending</span>
-                </div>
+              <div className="mt-8">
+                <Link
+                  href="/photo"
+                  className="inline-flex items-center gap-3 bg-[#294434] px-5 py-3.5 text-sm font-medium text-white transition-colors hover:bg-[#365842]"
+                >
+                  <ScanSearch size={17} />
+                  Explore analysis tools
+                  <ArrowUpRight size={16} />
+                </Link>
               </div>
             </div>
 
+            {/* Decorative visual */}
+            <div className="relative hidden items-center justify-center overflow-hidden bg-[#d9e1d4] lg:flex">
+              <div className="absolute h-[290px] w-[290px] rounded-full border border-[#aab9a5]" />
+              <div className="absolute h-[220px] w-[220px] rounded-full border border-[#aab9a5]" />
+              <div className="absolute h-[145px] w-[145px] rounded-full border border-[#aab9a5]" />
+
+              <div className="relative flex h-24 w-24 items-center justify-center bg-[#294434] text-[#e6eee2]">
+                <ShieldCheck size={43} strokeWidth={1.3} />
+              </div>
+
+              <span className="absolute left-[16%] top-[22%] h-3 w-3 rounded-full bg-[#829c7e]" />
+              <span className="absolute bottom-[22%] right-[19%] h-2 w-2 rounded-full bg-[#829c7e]" />
+              <span className="absolute right-[17%] top-[25%] h-2 w-2 rounded-full bg-[#829c7e]" />
+
+              <p className="absolute bottom-7 text-[9px] font-medium tracking-[2.5px] text-[#708571]">
+                ANALYSE · VERIFY · UNDERSTAND
+              </p>
+            </div>
           </div>
-
-          {/* Footer */}
-          <footer className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-gray-600">
-            DeepShield AI © 2026 · Multimodal Security Intelligence Platform
-          </footer>
-
         </section>
+
+        {/* Analysis tools */}
+        <section className="mt-12">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-[10px] font-semibold tracking-[2px] text-[#819080]">
+                THE TOOLKIT
+              </p>
+              <h3 className="mt-2 text-[25px] font-semibold tracking-[-0.7px] text-[#26332a]">
+                Analysis modules
+              </h3>
+            </div>
+
+            <p className="text-xs text-[#81877e]">
+              Select a tool to begin
+            </p>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-0 border-y border-[#dedfd5] sm:grid-cols-2 xl:grid-cols-4">
+            {modules.map((module, index) => {
+              const Icon = module.icon;
+
+              return (
+                <Link
+                  key={module.href}
+                  href={module.href}
+                  className={`group flex min-h-[245px] flex-col border-[#dedfd5] p-6 transition-colors hover:bg-[#eceee6] ${
+                    index % 2 === 0 ? "sm:border-r" : ""
+                  } xl:border-r xl:last:border-r-0`}
+                >
+                  <div className="flex items-start justify-between">
+                    <span className="text-[11px] tabular-nums text-[#899287]">
+                      {module.number}
+                    </span>
+                    <ArrowUpRight
+                      size={17}
+                      className="text-[#8b9688] transition-transform group-hover:-translate-y-1 group-hover:translate-x-1"
+                    />
+                  </div>
+
+                  <div className="mt-7 flex h-10 w-10 items-center justify-center bg-[#e5eae0] text-[#42614a]">
+                    <Icon size={20} strokeWidth={1.7} />
+                  </div>
+
+                  <h4 className="mt-5 text-[16px] font-semibold text-[#29372d]">
+                    {module.name}
+                  </h4>
+
+                  <p className="mt-2 text-xs leading-6 text-[#788076]">
+                    {module.description}
+                  </p>
+
+                  <span className="mt-auto pt-5 text-[9px] font-semibold tracking-[1.6px] text-[#819080]">
+                    {module.detail}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Assistant section */}
+        <section className="mt-12 grid grid-cols-1 gap-8 border-t border-[#dedfd5] pt-8 lg:grid-cols-[1fr_1fr]">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] font-semibold tracking-[2px] text-[#819080]">
+              <Sparkles size={14} />
+              YOUR COMPANION
+            </div>
+
+            <div className="mt-4 flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-[#e5eae0] text-[#42614a]">
+                <Bot size={22} />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-[#29372d]">
+                  AI Security Assistant
+                </h3>
+                <p className="mt-2 max-w-md text-sm leading-6 text-[#788076]">
+                  Explore the assistant interface for help understanding
+                  security concepts and interpreting analysis information.
+                </p>
+                <Link
+                  href="/assistant"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#42614a] hover:text-[#294434]"
+                >
+                  Open assistant
+                  <ArrowUpRight size={15} />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-l border-[#dedfd5] pl-0 lg:pl-8">
+            <p className="text-[10px] font-semibold tracking-[2px] text-[#819080]">
+              ABOUT THIS WORKSPACE
+            </p>
+
+            <p className="mt-4 max-w-lg text-sm leading-7 text-[#788076]">
+              DeepShield brings multiple digital content analysis tools
+              together in one place. Results are generated by machine
+              learning and inspection systems, so treat them as indicators
+              rather than definitive proof of authenticity or fraud.
+            </p>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="mt-14 flex flex-col justify-between gap-2 border-t border-[#dedfd5] pt-5 text-[10px] tracking-wide text-[#92978e] sm:flex-row">
+          <span>DEEPSHIELD AI · MULTIMODAL SECURITY</span>
+          <span>BUILT BY CODE SANTOS · 2026</span>
+        </footer>
       </div>
-    </main>
+    </div>
   );
 }

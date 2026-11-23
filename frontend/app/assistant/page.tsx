@@ -648,77 +648,64 @@ export default function AssistantPage() {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+ 
   return (
-    <div className="h-[calc(100vh-0px)] bg-[#080b12] text-white flex overflow-hidden">
-
-      {/* MOBILE SIDEBAR OVERLAY */}
+    <div className="h-screen flex overflow-hidden bg-[#f5f5ef] text-[#26382f]">
+      {/* MOBILE OVERLAY */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* SIDEBAR */}
       <aside
-        className={`fixed lg:relative z-50 top-0 left-0 h-full w-[280px] bg-[#0c111a] border-r border-white/5 flex flex-col transition-transform duration-300 ${
-          sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
+        className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col bg-[#182923] text-[#f5f5ef] transition-transform duration-300 lg:relative lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* SIDEBAR HEADER */}
-        <div className="p-5 border-b border-white/5">
-
-          <div className="flex items-center justify-between mb-6">
-
+        <div className="border-b border-white/10 p-5">
+          <div className="mb-7 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-emerald-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#dce7d8]/10">
+                <Shield className="h-5 w-5 text-[#c1d5bd]" />
               </div>
-
               <div>
-                <h1 className="font-bold text-sm tracking-wide">
-                  DeepShield
-                </h1>
-
-                <p className="text-[10px] text-gray-500">
+                <h1 className="text-sm font-bold tracking-wide">DeepShield</h1>
+                <p className="mt-1 text-[9px] tracking-[2px] text-[#a9b9aa]">
                   SECURITY INTELLIGENCE
                 </p>
               </div>
             </div>
-
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 text-gray-500 hover:text-white"
+              className="rounded-lg p-2 text-[#a9b9aa] hover:bg-white/10 lg:hidden"
             >
               <X size={18} />
             </button>
           </div>
 
-          {/* NEW CHAT */}
           <button
             onClick={newChat}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#dce7d8] px-4 py-3 text-sm font-semibold text-[#23382d] transition hover:bg-white"
           >
-            <Plus size={18} />
-            <span className="text-sm font-medium">New conversation</span>
+            <Plus size={17} />
+            New conversation
           </button>
         </div>
 
-        {/* CHAT HISTORY */}
+        {/* HISTORY */}
         <div className="flex-1 overflow-y-auto p-4">
-
-          <div className="flex items-center justify-between px-2 mb-3">
-            <p className="text-[11px] text-gray-500 uppercase tracking-wider">
+          <div className="mb-4 flex items-center justify-between px-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[1.5px] text-[#9eafa0]">
               Recent conversations
             </p>
-
             {chats.length > 1 && (
               <button
                 onClick={clearAllChats}
                 title="Clear all conversations"
-                className="text-gray-600 hover:text-red-400 transition"
+                className="rounded-lg p-1.5 text-[#a9b9aa] transition hover:bg-white/10 hover:text-red-300"
               >
                 <Trash2 size={14} />
               </button>
@@ -726,161 +713,144 @@ export default function AssistantPage() {
           </div>
 
           <div className="space-y-1">
-            {chats
+            {[...chats]
               .sort((a, b) => b.updatedAt - a.updatedAt)
               .map((chat) => (
                 <div
                   key={chat.id}
-                  className={`group flex items-center gap-2 p-2.5 rounded-lg transition ${
+                  className={`group flex items-center gap-2 rounded-xl border px-3 py-3 transition ${
                     activeChatId === chat.id
-                      ? "bg-white/[0.06] border border-white/[0.06]"
-                      : "hover:bg-white/[0.03]"
+                      ? "border-white/10 bg-white/10"
+                      : "border-transparent hover:bg-white/[0.06]"
                   }`}
                 >
                   <MessageSquare
                     size={15}
-                    className={`shrink-0 ${
+                    className={
                       activeChatId === chat.id
-                        ? "text-emerald-400"
-                        : "text-gray-600"
-                    }`}
+                        ? "shrink-0 text-[#dce7d8]"
+                        : "shrink-0 text-[#9eafa0]"
+                    }
                   />
-
                   <button
                     onClick={() => switchChat(chat.id)}
-                    className="flex-1 text-left text-xs truncate text-gray-300"
+                    className="min-w-0 flex-1 truncate text-left text-xs text-[#e1e8df]"
                   >
                     {chat.title}
                   </button>
-
                   <button
                     onClick={() => deleteChat(chat.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-gray-600 hover:text-red-400 transition"
                     title="Delete conversation"
+                    className="rounded p-1 text-[#9eafa0] opacity-0 transition hover:text-red-300 group-hover:opacity-100"
                   >
                     <Trash2 size={13} />
                   </button>
                 </div>
               ))}
           </div>
+
+          {chats.length === 0 && (
+            <p className="px-2 text-xs text-[#9eafa0]">
+              Your conversations will appear here.
+            </p>
+          )}
         </div>
 
         {/* SIDEBAR FOOTER */}
-        <div className="p-4 border-t border-white/5">
-
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
-            <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-emerald-400" />
+        <div className="border-t border-white/10 p-4">
+          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dce7d8]/10">
+              <Bot size={17} className="text-[#dce7d8]" />
             </div>
-
-            <div>
-              <p className="text-xs font-medium">
-                Security Assistant
-              </p>
-
-              <p className="text-[10px] text-gray-500">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold">Security Assistant</p>
+              <p className="mt-1 text-[10px] text-[#a9b9aa]">
                 Demo intelligence mode
               </p>
             </div>
-
-            <span className="ml-auto w-2 h-2 bg-yellow-400 rounded-full" />
+            <span className="ml-auto h-2 w-2 rounded-full bg-amber-400" />
           </div>
         </div>
       </aside>
 
-      {/* MAIN CHAT AREA */}
-      <main className="flex-1 min-w-0 flex flex-col relative">
-
-        {/* TOP BAR */}
-        <header className="h-[70px] shrink-0 flex items-center justify-between px-4 md:px-8 border-b border-white/5 bg-[#080b12]/90 backdrop-blur">
-
-          <div className="flex items-center gap-3">
-
+      {/* MAIN WORKSPACE */}
+      <main className="flex min-w-0 flex-1 flex-col">
+        {/* HEADER */}
+        <header className="flex h-[72px] shrink-0 items-center justify-between border-b border-[#dfe3d9] bg-[#fbfbf7] px-4 md:px-8">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg hover:bg-white/5 text-gray-400"
+              className="rounded-lg p-2 text-[#53665a] transition hover:bg-[#e9eee6] lg:hidden"
             >
               <Menu size={20} />
             </button>
-
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e6ede3]">
+              <Sparkles size={18} className="text-[#496b52]" />
             </div>
-
-            <div>
-              <h2 className="font-semibold text-sm">
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-bold text-[#26382f]">
                 DeepShield AI Assistant
               </h2>
-
-              <div className="flex items-center gap-1.5 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-
-                <span className="text-[10px] text-gray-500">
-                  Demo mode · AI backend not connected
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                <span className="text-[10px] text-[#849187]">
+                  Demo mode · Backend not connected
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500">
-            <ShieldCheck size={14} className="text-emerald-400" />
+          <div className="hidden items-center gap-2 rounded-full border border-[#dfe6dc] bg-white px-3 py-2 text-[11px] font-medium text-[#64766a] sm:flex">
+            <ShieldCheck size={14} className="text-[#547b5b]" />
             Secure session
           </div>
         </header>
 
-        {/* MESSAGE AREA */}
-        <div className="flex-1 overflow-y-auto">
-
-          <div className="max-w-4xl mx-auto px-4 md:px-8 py-8">
-
-            {/* EMPTY CHAT / WELCOME */}
+        {/* CHAT CONTENT */}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto w-full max-w-4xl px-4 py-8 md:px-8 md:py-10">
+            {/* WELCOME */}
             {messages.length === 0 && (
-              <div className="min-h-[55vh] flex flex-col items-center justify-center text-center">
-
-                {/* HERO ICON */}
+              <div className="flex min-h-[55vh] flex-col items-center justify-center text-center">
                 <div className="relative mb-6">
-
-                  <div className="w-20 h-20 rounded-3xl bg-emerald-500/[0.07] border border-emerald-500/15 flex items-center justify-center">
-                    <Shield className="w-9 h-9 text-emerald-400" />
+                  <div className="flex h-20 w-20 items-center justify-center rounded-[26px] border border-[#d7e1d3] bg-[#e8eee4]">
+                    <Shield className="h-9 w-9 text-[#496b52]" />
                   </div>
-
-                  <div className="absolute -right-2 -top-2 w-7 h-7 rounded-full bg-[#101620] border border-white/10 flex items-center justify-center">
-                    <Sparkles size={13} className="text-emerald-400" />
+                  <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full border border-[#dce5d8] bg-white">
+                    <Sparkles size={14} className="text-[#64836a]" />
                   </div>
                 </div>
 
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-[2.5px] text-[#7b907d]">
+                  Your digital safety companion
+                </p>
+                <h1 className="max-w-2xl text-2xl font-bold tracking-tight text-[#26382f] md:text-3xl">
                   Your Security Intelligence Assistant
                 </h1>
-
-                <p className="text-gray-400 text-sm max-w-xl mt-3 leading-relaxed">
+                <p className="mt-3 max-w-xl text-sm leading-7 text-[#78857b]">
                   Ask questions about cybersecurity, digital authenticity,
                   suspicious content, or your DeepShield analysis results.
                 </p>
 
                 {/* PROMPT CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-9 w-full">
-
+                <div className="mt-9 grid w-full grid-cols-1 gap-3 text-left sm:grid-cols-2">
                   {suggestedPrompts.map((prompt, index) => {
                     const Icon = prompt.icon;
-
                     return (
                       <button
                         key={index}
                         onClick={() => sendMessage(prompt.prompt)}
-                        className="text-left p-4 rounded-xl bg-[#101620] border border-white/5 hover:border-emerald-500/20 hover:bg-emerald-500/[0.02] transition group"
+                        className="group rounded-2xl border border-[#e0e5dc] bg-[#fbfbf7] p-5 text-left transition hover:-translate-y-0.5 hover:border-[#aebfa9] hover:bg-white hover:shadow-sm"
                       >
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="p-2 rounded-lg bg-emerald-500/10">
-                            <Icon className="w-4 h-4 text-emerald-400" />
+                        <div className="mb-3 flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9efe5] transition group-hover:bg-[#dce8d8]">
+                            <Icon size={18} className="text-[#55745a]" />
                           </div>
-
-                          <p className="text-sm font-medium group-hover:text-emerald-400 transition">
+                          <p className="text-sm font-semibold text-[#34483a]">
                             {prompt.title}
                           </p>
                         </div>
-
-                        <p className="text-xs text-gray-500 leading-relaxed">
+                        <p className="text-xs leading-6 text-[#849087]">
                           {prompt.description}
                         </p>
                       </button>
@@ -889,7 +859,7 @@ export default function AssistantPage() {
                 </div>
 
                 {/* QUICK TOPICS */}
-                <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-2">
                   {[
                     "Phishing",
                     "AI-generated images",
@@ -899,8 +869,10 @@ export default function AssistantPage() {
                   ].map((topic) => (
                     <button
                       key={topic}
-                      onClick={() => usePrompt(`Explain ${topic} and how to stay safe.`)}
-                      className="px-3 py-1.5 rounded-full border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] text-xs text-gray-400 transition"
+                      onClick={() =>
+                        usePrompt(`Explain ${topic} and how to stay safe.`)
+                      }
+                      className="rounded-full border border-[#dfe5db] bg-white px-3.5 py-2 text-[11px] font-medium text-[#68796c] transition hover:border-[#aebfa9] hover:bg-[#edf2e9]"
                     >
                       {topic}
                     </button>
@@ -909,10 +881,9 @@ export default function AssistantPage() {
               </div>
             )}
 
-            {/* CHAT MESSAGES */}
+            {/* MESSAGES */}
             {messages.length > 0 && (
               <div className="space-y-8">
-
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -922,111 +893,97 @@ export default function AssistantPage() {
                         : "justify-start"
                     }`}
                   >
-
-                    {/* ASSISTANT ICON */}
                     {message.role === "assistant" && (
-                      <div className="w-9 h-9 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/10 flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-emerald-400" />
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#dce5d8] bg-[#e8eee4]">
+                        <Shield size={17} className="text-[#496b52]" />
                       </div>
                     )}
 
-                    {/* MESSAGE */}
                     <div
-                      className={`max-w-[85%] md:max-w-[78%] ${
+                      className={`min-w-0 ${
                         message.role === "user"
-                          ? "bg-emerald-500/[0.08] border border-emerald-500/10 rounded-2xl rounded-tr-sm px-4 py-3"
-                          : "min-w-0"
+                          ? "max-w-[85%] rounded-2xl rounded-tr-sm border border-[#d7e4d3] bg-[#eaf0e6] px-4 py-3 md:max-w-[78%]"
+                          : "max-w-[90%] flex-1 md:max-w-[85%]"
                       }`}
                     >
-
                       {message.role === "user" ? (
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
+                        <>
+                          <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#34483a]">
+                            {message.content}
+                          </p>
+                          <div className="mt-2 text-right text-[10px] text-[#829184]">
+                            {formatTime(message.timestamp)}
+                          </div>
+                        </>
                       ) : (
                         <>
-                          <div className="text-sm text-gray-300 leading-7 whitespace-pre-wrap break-words">
-                            {message.content}
+                          <div className="prose prose-sm max-w-none break-words leading-7 text-[#46564b] prose-headings:mb-3 prose-headings:mt-5 prose-headings:font-bold prose-headings:text-[#2d4435] prose-p:my-3 prose-li:my-1 prose-strong:text-[#344b38] prose-a:text-[#547b5b]">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {message.content}
+                            </ReactMarkdown>
                           </div>
-
-                          {/* ACTIONS */}
-                          <div className="flex items-center gap-1 mt-4">
-
+                          <div className="mt-4 flex items-center gap-1 border-t border-[#e4e8df] pt-3">
                             <button
                               onClick={() => copyMessage(message)}
                               title="Copy response"
-                              className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition"
+                              className="rounded-lg p-2 text-[#829087] transition hover:bg-[#e9eee6] hover:text-[#405c47]"
                             >
                               {copiedMessageId === message.id ? (
-                                <Check size={15} className="text-emerald-400" />
+                                <Check size={15} className="text-[#547b5b]" />
                               ) : (
                                 <Copy size={15} />
                               )}
                             </button>
-
                             <button
                               onClick={() => speakMessage(message)}
                               title="Listen to response"
-                              className="p-2 rounded-lg text-gray-500 hover:text-white hover:bg-white/5 transition"
+                              className="rounded-lg p-2 text-[#829087] transition hover:bg-[#e9eee6] hover:text-[#405c47]"
                             >
                               {speaking ? (
-                                <VolumeX size={15} className="text-emerald-400" />
+                                <VolumeX size={15} className="text-[#547b5b]" />
                               ) : (
                                 <Volume2 size={15} />
                               )}
                             </button>
-
-                            <span className="text-[10px] text-gray-600 ml-1">
+                            <span className="ml-2 text-[10px] text-[#9aa59b]">
                               {formatTime(message.timestamp)}
                             </span>
                           </div>
                         </>
                       )}
-
-                      {message.role === "user" && (
-                        <div className="text-[10px] text-emerald-400/60 mt-2 text-right">
-                          {formatTime(message.timestamp)}
-                        </div>
-                      )}
                     </div>
 
-                    {/* USER ICON */}
                     {message.role === "user" && (
-                      <div className="w-9 h-9 shrink-0 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-xs font-semibold text-gray-400">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#e0e4dc] bg-white text-xs font-bold text-[#718174]">
                         U
                       </div>
                     )}
                   </div>
                 ))}
 
-                {/* TYPING */}
+                {/* TYPING INDICATOR */}
                 {isTyping && (
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                      <Shield className="w-4 h-4 text-emerald-400" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#e8eee4]">
+                      <Bot size={17} className="text-[#547b5b]" />
                     </div>
-
-                    <div className="px-4 py-3 rounded-xl bg-[#101620] border border-white/5 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:150ms]" />
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:300ms]" />
+                    <div className="flex items-center gap-1.5 rounded-xl border border-[#e0e5dc] bg-white px-4 py-4">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#78917a]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#78917a] [animation-delay:150ms]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#78917a] [animation-delay:300ms]" />
                     </div>
                   </div>
                 )}
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
         </div>
 
-        {/* INPUT AREA */}
-        <div className="shrink-0 border-t border-white/5 bg-[#080b12] px-4 md:px-8 py-4">
-
-          <div className="max-w-4xl mx-auto">
-
-            <div className="relative bg-[#101620] border border-white/10 rounded-2xl focus-within:border-emerald-500/30 transition">
-
+        {/* MESSAGE INPUT */}
+        <div className="shrink-0 border-t border-[#dfe4da] bg-[#fbfbf7] px-4 py-4 md:px-8">
+          <div className="mx-auto max-w-4xl">
+            <div className="rounded-2xl border border-[#dce3d8] bg-white shadow-sm transition focus-within:border-[#91a991]">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -1035,25 +992,18 @@ export default function AssistantPage() {
                 placeholder="Ask DeepShield anything about security..."
                 rows={1}
                 disabled={isTyping}
-                className="w-full resize-none bg-transparent text-sm text-white placeholder-gray-500 px-4 pt-4 pb-14 outline-none max-h-[180px] min-h-[58px]"
+                className="max-h-[180px] min-h-[58px] w-full resize-none bg-transparent px-4 pb-3 pt-4 text-sm text-[#34483a] outline-none placeholder:text-[#a1aaa0] disabled:opacity-60"
               />
-
-              {/* INPUT FOOTER */}
-              <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
-
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-emerald-500/[0.05] text-emerald-400/70">
-                    <Lock size={11} />
-                    <span className="text-[10px]">
-                      Security Assistant
-                    </span>
-                  </div>
+              <div className="flex items-center justify-between px-3 pb-3">
+                <div className="flex items-center gap-2 rounded-lg bg-[#f0f3ed] px-2.5 py-1.5 text-[10px] font-medium text-[#728474]">
+                  <Lock size={11} />
+                  Security Assistant
                 </div>
-
                 <button
                   onClick={() => sendMessage()}
                   disabled={!input.trim() || isTyping}
-                  className="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-600 disabled:bg-white/5 disabled:text-gray-600 text-white flex items-center justify-center transition"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#294638] text-white transition hover:bg-[#365b45] disabled:cursor-not-allowed disabled:bg-[#e5e9e2] disabled:text-[#a3ada1]"
+                  title="Send message"
                 >
                   {isTyping ? (
                     <Activity size={16} className="animate-pulse" />
@@ -1063,14 +1013,13 @@ export default function AssistantPage() {
                 </button>
               </div>
             </div>
-
-            <p className="text-[10px] text-gray-600 text-center mt-3">
+            <p className="mt-3 text-center text-[10px] text-[#9aa49a]">
               DeepShield AI Demo Assistant · AI responses may require verification
             </p>
           </div>
         </div>
-
       </main>
     </div>
   );
+
 }

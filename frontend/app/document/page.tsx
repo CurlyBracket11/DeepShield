@@ -1,6 +1,25 @@
+
 "use client";
 
 import { useRef, useState } from "react";
+import {
+  FileText,
+  Upload,
+  ShieldCheck,
+  ScanText,
+  BrainCircuit,
+  AlertTriangle,
+  CheckCircle2,
+  FileSearch,
+  Volume2,
+  Copy,
+  RefreshCw,
+  FileType,
+  Sparkles,
+  LockKeyhole,
+  FileCheck2,
+  X,
+} from "lucide-react";
 
 interface DocumentFinding {
   description?: string;
@@ -26,12 +45,44 @@ interface DocumentResult {
   detected?: boolean;
   security_findings?: DocumentFinding[];
   findings?: DocumentFinding[];
+  content_findings?: DocumentFinding[];
+  language_findings?: DocumentFinding[];
   extracted_text?: string;
   text?: string;
   content?: string;
   assistant?: DocumentAssistant;
   [key: string]: unknown;
 }
+
+const capabilities = [
+  {
+    icon: ScanText,
+    title: "Content Analysis",
+    description: "Extract and inspect document content for suspicious information.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Threat Detection",
+    description: "Identify potential security risks and unusual indicators.",
+  },
+  {
+    icon: FileSearch,
+    title: "Risk Assessment",
+    description: "Evaluate document signals and generate a risk score.",
+  },
+  {
+    icon: BrainCircuit,
+    title: "AI Intelligence",
+    description: "Translate analysis results into an understandable explanation.",
+  },
+];
+
+const processSteps = [
+  ["01", "Document Processing", "The uploaded file is prepared for analysis."],
+  ["02", "Content Extraction", "Text and relevant information are extracted."],
+  ["03", "Security Inspection", "Extracted content is checked for suspicious indicators."],
+  ["04", "Risk Assessment", "The analysis engine returns a verdict and risk score."],
+];
 
 export default function DocumentPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -40,12 +91,9 @@ export default function DocumentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  const [copyMessage, setCopyMessage] = useState("");
 
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // ==========================================
-  // FILE HANDLING
-  // ==========================================
 
   const handleFile = (selectedFile?: File) => {
     if (!selectedFile) return;
@@ -53,18 +101,20 @@ export default function DocumentPage() {
     const allowedExtensions = [
       ".pdf",
       ".txt",
-      ".doc",
       ".docx",
+      ".jpg",
+      ".jpeg",
+      ".png",
     ];
 
     const fileName = selectedFile.name.toLowerCase();
 
-    const isValidFile = allowedExtensions.some((extension =>
+    const isValidFile = allowedExtensions.some((extension) =>
       fileName.endsWith(extension)
-    ));
+    );
 
     if (!isValidFile) {
-      setError("Please upload a PDF, TXT, DOC, or DOCX file.");
+      setError("Please upload a PDF, TXT, DOCX, JPG, JPEG, or PNG file.");
       return;
     }
 
@@ -76,11 +126,8 @@ export default function DocumentPage() {
     setPreview(URL.createObjectURL(selectedFile));
     setResult(null);
     setError("");
+    setCopyMessage("");
   };
-
-  // ==========================================
-  // REMOVE FILE
-  // ==========================================
 
   const removeFile = () => {
     if (preview) {
@@ -91,15 +138,12 @@ export default function DocumentPage() {
     setPreview(null);
     setResult(null);
     setError("");
+    setCopyMessage("");
 
     if (inputRef.current) {
       inputRef.current.value = "";
     }
   };
-
-  // ==========================================
-  // DRAG AND DROP
-  // ==========================================
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -121,10 +165,6 @@ export default function DocumentPage() {
     }
   };
 
-  // ==========================================
-  // DOCUMENT ANALYSIS
-  // ==========================================
-
   const analyzeDocument = async () => {
     if (!file) return;
 
@@ -134,11 +174,10 @@ export default function DocumentPage() {
 
     try {
       const formData = new FormData();
-
       formData.append("file", file);
 
       const response = await fetch(
-        "http://127.0.0.1:8000/analyze-document",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/analyze-document`,
         {
           method: "POST",
           body: formData,
@@ -160,7 +199,6 @@ export default function DocumentPage() {
       }
 
       const data: DocumentResult = await response.json();
-
       setResult(data);
     } catch (err) {
       setError(
@@ -173,40 +211,33 @@ export default function DocumentPage() {
     }
   };
 
-  // ==========================================
-  // SPEECH
-  // ==========================================
-
   const listenToReport = () => {
     const summary = result?.assistant?.summary;
 
-    if (!summary) {
-      return;
-    }
+    if (!summary) return;
 
     window.speechSynthesis.cancel();
 
     const speech = new SpeechSynthesisUtterance(summary);
-
     speech.rate = 0.95;
     speech.pitch = 1;
 
     window.speechSynthesis.speak(speech);
   };
 
-  // ==========================================
-  // COPY REPORT
-  // ==========================================
-
   const copyReport = async () => {
     if (!result) return;
 
-    const findings =
-      result.security_findings || result.findings || [];
+    const reportFindings = [
+      ...(result.content_findings ?? []),
+      ...(result.language_findings ?? []),
+      ...(result.security_findings ?? []),
+      ...(result.findings ?? []),
+    ];
 
     const findingsText =
-      findings.length > 0
-        ? findings
+      reportFindings.length > 0
+        ? reportFindings
             .map(
               (finding, index) =>
                 `${index + 1}. ${
@@ -236,24 +267,18 @@ ${result.assistant?.summary || "Summary unavailable."}
 
     try {
       await navigator.clipboard.writeText(report);
-      alert("Document report copied successfully!");
+      setCopyMessage("Report copied successfully.");
+
+      window.setTimeout(() => setCopyMessage(""), 2500);
     } catch {
-      alert("Unable to copy report.");
+      setCopyMessage("Unable to copy report.");
     }
   };
-
-  // ==========================================
-  // RESET
-  // ==========================================
 
   const analyzeAgain = () => {
     window.speechSynthesis.cancel();
     removeFile();
   };
-
-  // ==========================================
-  // RESULT HELPERS
-  // ==========================================
 
   const riskScore = Math.max(
     0,
@@ -262,19 +287,23 @@ ${result.assistant?.summary || "Summary unavailable."}
 
   const riskColor =
     riskScore >= 70
-      ? "#ef4444"
+      ? "#c65c4b"
       : riskScore >= 40
-        ? "#f59e0b"
-        : "#10b981";
+        ? "#bd8a36"
+        : "#65866b";
 
-  const isSafe = result?.prediction
-    ?.toUpperCase()
-    .includes("SAFE");
+  const prediction = result?.prediction?.toUpperCase() ?? "";
 
-  const findings =
-    result?.security_findings ||
-    result?.findings ||
-    [];
+  const isSafe =
+    prediction.includes("SAFE") ||
+    prediction.includes("LIKELY AUTHENTIC");
+
+  const findings = [
+    ...(result?.content_findings ?? []),
+    ...(result?.language_findings ?? []),
+    ...(result?.security_findings ?? []),
+    ...(result?.findings ?? []),
+  ];
 
   const extractedText =
     result?.extracted_text ||
@@ -282,1308 +311,671 @@ ${result.assistant?.summary || "Summary unavailable."}
     result?.content ||
     "";
 
-  const fileExtension = file?.name
-    .split(".")
-    .pop()
-    ?.toUpperCase() || "FILE";
+  const fileExtension =
+    file?.name.split(".").pop()?.toUpperCase() || "FILE";
 
   const isPDF = file?.name.toLowerCase().endsWith(".pdf");
-
-  // ==========================================
-  // MAIN UI
-  // ==========================================
+  const isImage =
+    file?.name.toLowerCase().endsWith(".jpg") ||
+    file?.name.toLowerCase().endsWith(".jpeg") ||
+    file?.name.toLowerCase().endsWith(".png");
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#080b12",
-        color: "#f1f5f9",
-        padding: "40px",
-        fontFamily: "Inter, Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "1400px",
-          margin: "0 auto",
-        }}
-      >
-        {/* ================================= */}
-        {/* HEADER */}
-        {/* ================================= */}
+    <main className="min-h-screen bg-[#f5f5ef] px-5 py-8 text-[#20382f] md:px-9 md:py-10">
+      <div className="mx-auto max-w-[1450px]">
 
-        <div style={{ marginBottom: "35px" }}>
-          <div
-            style={{
-              color: "#10b981",
-              fontSize: "13px",
-              fontWeight: 700,
-              letterSpacing: "3px",
-              marginBottom: "10px",
-            }}
-          >
-            DEEPSHIELD AI / DOCUMENT INTELLIGENCE
-          </div>
+        {/* PAGE HEADER */}
 
-          <h1
-            style={{
-              fontSize: "38px",
-              fontWeight: 800,
-              margin: "0 0 12px",
-            }}
-          >
-            Document Analysis
-          </h1>
-
-          <p
-            style={{
-              color: "#94a3b8",
-              fontSize: "15px",
-              maxWidth: "750px",
-              lineHeight: 1.7,
-            }}
-          >
-            Analyze documents for suspicious content, potentially malicious
-            information, security threats, and hidden risks with DeepShield AI.
+        <header className="mb-9">
+          <p className="mb-3 text-[11px] font-bold tracking-[2.5px] text-[#788d7d]">
+            DEEPSHIELD AI <span className="mx-2">/</span> DOCUMENT INTELLIGENCE
           </p>
-        </div>
 
-        {/* ================================= */}
-        {/* MAIN GRID */}
-        {/* ================================= */}
+          <div className="flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-[#20382f] md:text-[38px]">
+                Document Analysis
+              </h1>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "minmax(0, 1.8fr) minmax(300px, 1fr)",
-            gap: "25px",
-            alignItems: "start",
-          }}
-        >
-          {/* ================================= */}
-          {/* LEFT UPLOAD PANEL */}
-          {/* ================================= */}
+              <p className="mt-3 max-w-[720px] text-sm leading-7 text-[#718078] md:text-[15px]">
+                Inspect documents for suspicious content, potentially
+                malicious information and security indicators with DeepShield AI.
+              </p>
+            </div>
 
-          <div
-            style={{
-              background: "#101620",
-              border: "1px solid #1e293b",
-              borderRadius: "20px",
-              padding: "28px",
-            }}
-          >
-            {/* PANEL HEADER */}
+            <div className="flex items-center gap-2 border border-[#d9dfd5] bg-[#eeefe8] px-4 py-2.5 text-xs font-semibold tracking-wide text-[#54705b]">
+              <ShieldCheck size={16} />
+              DOCUMENT SCANNER
+            </div>
+          </div>
+        </header>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: "12px",
-                marginBottom: "25px",
-              }}
-            >
+        {/* UPLOAD WORKSPACE */}
+
+        <section className="block">
+
+          {/* UPLOAD PANEL */}
+
+          <div className="border border-[#dce0d6] bg-[#fafaf6]">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#dce0d6] px-6 py-5">
               <div>
-                <h2 style={{ margin: 0, fontSize: "20px" }}>
-                  Document Scanner
+                <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                  DOCUMENT INPUT
+                </p>
+                <h2 className="mt-1.5 text-lg font-bold">
+                  Upload a document
                 </h2>
-
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "13px",
-                    marginTop: "8px",
-                  }}
-                >
-                  Upload a document for security analysis
+                <p className="mt-1 text-xs text-[#829087]">
+                  Select a file to begin the security inspection
                 </p>
               </div>
 
-              <div
-                style={{
-                  background: "#052e24",
-                  color: "#10b981",
-                  padding: "9px 14px",
-                  borderRadius: "10px",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                }}
-              >
-                AI SCANNER
+              <div className="flex items-center gap-2 border border-[#d9e1d5] bg-[#eef2eb] px-3 py-2 text-[10px] font-bold tracking-wider text-[#58745d]">
+                <LockKeyhole size={13} />
+                PRIVATE SCAN
               </div>
             </div>
 
-            {/* ================================= */}
-            {/* UPLOAD AREA */}
-            {/* ================================= */}
+            <div className="p-5 md:p-7">
 
-            {!preview ? (
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => inputRef.current?.click()}
-                style={{
-                  border: `2px dashed ${
-                    dragActive ? "#10b981" : "#334155"
-                  }`,
-                  background: dragActive ? "#0b2b22" : "#0b111b",
-                  borderRadius: "18px",
-                  padding: "60px 25px",
-                  textAlign: "center",
-                  cursor: "pointer",
-                  transition: "0.2s",
-                }}
-              >
+              {!preview ? (
                 <div
-                  style={{
-                    width: "75px",
-                    height: "75px",
-                    margin: "0 auto 20px",
-                    borderRadius: "18px",
-                    background: "#102c24",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "34px",
-                  }}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => inputRef.current?.click()}
+                  className={`cursor-pointer border-2 border-dashed px-5 py-14 text-center transition-colors md:py-20 ${
+                    dragActive
+                      ? "border-[#66866d] bg-[#edf3eb]"
+                      : "border-[#cbd5c9] bg-[#f3f4ed] hover:border-[#91a593] hover:bg-[#f0f3eb]"
+                  }`}
                 >
-                  📄
-                </div>
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center bg-[#e5ebe1] text-[#57755d]">
+                    <Upload size={27} strokeWidth={1.7} />
+                  </div>
 
-                <h3
-                  style={{
-                    fontSize: "18px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  Upload Document
-                </h3>
-
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "14px",
-                    marginBottom: "20px",
-                  }}
-                >
-                  Drag and drop your document here or browse files
-                </p>
-
-                <button
-                  type="button"
-                  style={{
-                    background: "#10b981",
-                    color: "#052e24",
-                    border: "none",
-                    padding: "12px 22px",
-                    borderRadius: "10px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Browse Documents
-                </button>
-
-                <p
-                  style={{
-                    color: "#64748b",
-                    fontSize: "12px",
-                    marginTop: "20px",
-                  }}
-                >
-                  Supported formats: PDF, TXT, DOC, DOCX
-                </p>
-              </div>
-            ) : (
-              /* ================================= */
-              /* DOCUMENT PREVIEW */
-              /* ================================= */
-
-              <div
-                style={{
-                  background: "#0b111b",
-                  border: "1px solid #263244",
-                  borderRadius: "18px",
-                  padding: "20px",
-                }}
-              >
-                {/* PREVIEW HEADER */}
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "15px",
-                    gap: "12px",
-                  }}
-                >
-                  <h3 style={{ margin: 0, fontSize: "15px" }}>
-                    Document Preview
+                  <h3 className="mt-6 text-lg font-bold text-[#263c31]">
+                    Drop your document here
                   </h3>
+
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#849087]">
+                    Drag and drop a file into this area, or browse your device
+                    to select a document.
+                  </p>
 
                   <button
                     type="button"
-                    onClick={removeFile}
-                    style={{
-                      background: "#301819",
-                      border: "1px solid #7f1d1d",
-                      color: "#f87171",
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      cursor: "pointer",
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      inputRef.current?.click();
                     }}
+                    className="mt-6 inline-flex items-center gap-2 bg-[#294638] px-6 py-3 text-xs font-bold tracking-wide text-white transition-colors hover:bg-[#365844]"
                   >
-                    Remove
+                    <FileText size={15} />
+                    BROWSE DOCUMENTS
                   </button>
+
+                  <p className="mt-6 text-[10px] font-semibold tracking-[1.5px] text-[#9aa399]">
+                    PDF <span className="mx-2">·</span> TXT
+                    <span className="mx-2">·</span> DOCX
+                    <span className="mx-2">·</span> JPG
+                    <span className="mx-2">·</span> PNG
+                  </p>
                 </div>
+              ) : (
+                <div className="border border-[#dce0d6] bg-[#f3f4ed] p-4 md:p-5">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center bg-[#e4ebe1] text-[#5d7a63]">
+                        <FileType size={20} />
+                      </div>
 
-                {/* PDF PREVIEW */}
-
-                {isPDF ? (
-                  <div
-                    style={{
-                      background: "#080b12",
-                      borderRadius: "14px",
-                      overflow: "hidden",
-                      height: "430px",
-                    }}
-                  >
-                    <iframe
-                      src={preview}
-                      title="PDF Document Preview"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
-                        background: "#ffffff",
-                      }}
-                    />
-                  </div>
-                ) : (
-                  /* NON PDF PREVIEW */
-
-                  <div
-                    style={{
-                      background: "#080b12",
-                      borderRadius: "14px",
-                      padding: "40px 20px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <div style={{ fontSize: "65px", marginBottom: "15px" }}>
-                      📃
+                      <div>
+                        <p className="text-sm font-bold">Document Preview</p>
+                        <p className="mt-1 text-[10px] tracking-wider text-[#829087]">
+                          SELECTED FILE
+                        </p>
+                      </div>
                     </div>
 
-                    <h3 style={{ marginBottom: "10px" }}>
-                      {fileExtension} DOCUMENT
-                    </h3>
-
-                    <p
-                      style={{
-                        color: "#64748b",
-                        fontSize: "13px",
-                      }}
+                    <button
+                      type="button"
+                      onClick={removeFile}
+                      className="inline-flex items-center gap-2 border border-[#e2c9c3] bg-[#f7eeeb] px-3 py-2 text-xs font-semibold text-[#a35c4e] hover:bg-[#f1e3df]"
                     >
-                      Document ready for security analysis
+                      <X size={14} />
+                      Remove
+                    </button>
+                  </div>
+
+                  {isPDF ? (
+                    <div className="h-[430px] overflow-hidden border border-[#dce0d6] bg-white">
+                      <iframe
+                        src={preview}
+                        title="PDF Document Preview"
+                        className="h-full w-full border-0"
+                      />
+                    </div>
+                  ) : isImage ? (
+                    <div className="flex max-h-[430px] justify-center overflow-hidden border border-[#dce0d6] bg-white p-3">
+                      <img
+                        src={preview}
+                        alt="Uploaded document preview"
+                        className="max-h-[400px] max-w-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex min-h-[250px] flex-col items-center justify-center border border-[#dce0d6] bg-white px-5 text-center">
+                      <FileText size={48} className="text-[#6e8972]" />
+                      <p className="mt-4 text-sm font-bold tracking-wide">
+                        {fileExtension} DOCUMENT
+                      </p>
+                      <p className="mt-2 text-xs text-[#879188]">
+                        File selected and ready for security analysis
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-4 border border-[#dce0d6] bg-[#fafaf6] p-4">
+                    <p className="break-all text-sm font-semibold text-[#30463a]">
+                      {file?.name}
+                    </p>
+
+                    <div className="mt-2 flex flex-wrap gap-4 text-[10px] font-semibold tracking-wider text-[#879188]">
+                      <span>
+                        {file ? (file.size / 1024).toFixed(2) : "0"} KB
+                      </span>
+                      <span>{fileExtension} FORMAT</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <input
+                ref={inputRef}
+                type="file"
+                accept=".pdf,.txt,.docx,.jpg,.jpeg,.png"
+                hidden
+                onChange={(e) => handleFile(e.target.files?.[0])}
+              />
+
+              {error && (
+                <div className="mt-5 flex items-start gap-3 border border-[#e5c5bd] bg-[#f8eeea] p-4 text-sm text-[#a65345]">
+                  <AlertTriangle size={17} className="mt-0.5 shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              {file && (
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={analyzeDocument}
+                    disabled={loading}
+                    className="flex min-w-[190px] flex-1 items-center justify-center gap-2 bg-[#294638] px-5 py-4 text-xs font-bold tracking-wider text-white transition-colors hover:bg-[#365844] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <ShieldCheck size={16} />
+                    {loading ? "ANALYZING DOCUMENT..." : "ANALYZE DOCUMENT"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => inputRef.current?.click()}
+                    className="border border-[#cfd8cc] bg-[#f0f2eb] px-5 py-4 text-xs font-bold tracking-wider text-[#4e6854] hover:bg-[#e8ede4]"
+                  >
+                    CHANGE FILE
+                  </button>
+                </div>
+              )}
+
+              {loading && (
+                <div className="mt-6 border border-[#dce0d6] bg-[#f2f4ed] p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#b9c9b7] border-t-[#42634b]" />
+                    <p className="text-sm font-bold text-[#395441]">
+                      DeepShield is analyzing your document
                     </p>
                   </div>
-                )}
 
-                {/* FILE INFORMATION */}
+                  <div className="mt-4 h-1.5 overflow-hidden bg-[#dce3d8]">
+                    <div className="h-full w-2/3 animate-pulse bg-[#66866d]" />
+                  </div>
 
-                <div
-                  style={{
-                    marginTop: "18px",
-                    background: "#111a27",
-                    border: "1px solid #253244",
-                    borderRadius: "12px",
-                    padding: "15px",
-                  }}
-                >
-                  <p
-                    style={{
-                      margin: "0 0 8px",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      wordBreak: "break-all",
-                    }}
-                  >
-                    {file?.name}
+                  <p className="mt-3 text-xs text-[#829087]">
+                    Extracting information and inspecting security indicators...
                   </p>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "15px",
-                      flexWrap: "wrap",
-                      color: "#64748b",
-                      fontSize: "12px",
-                    }}
-                  >
-                    <span>
-                      {file
-                        ? (file.size / 1024).toFixed(2)
-                        : "0"}{" "}
-                      KB
-                    </span>
-
-                    <span>{fileExtension} FORMAT</span>
-                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* FILE INPUT */}
-
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".pdf,.txt,.doc,.docx"
-              hidden
-              onChange={(e) => handleFile(e.target.files?.[0])}
-            />
-
-            {/* ERROR MESSAGE */}
-
-            {error && (
-              <div
-                style={{
-                  background: "#2b1518",
-                  border: "1px solid #7f1d1d",
-                  color: "#f87171",
-                  borderRadius: "12px",
-                  padding: "15px",
-                  marginTop: "20px",
-                }}
-              >
-                ⚠ {error}
-              </div>
-            )}
-
-            {/* ACTION BUTTONS */}
-
-            {file && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  marginTop: "25px",
-                  flexWrap: "wrap",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={analyzeDocument}
-                  disabled={loading}
-                  style={{
-                    flex: 1,
-                    minWidth: "180px",
-                    background: loading ? "#047857" : "#10b981",
-                    color: "#052e24",
-                    border: "none",
-                    padding: "15px",
-                    borderRadius: "12px",
-                    fontWeight: 800,
-                    fontSize: "14px",
-                    cursor: loading ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {loading
-                    ? "Analyzing Document..."
-                    : "Analyze Document"}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => inputRef.current?.click()}
-                  style={{
-                    background: "#1e293b",
-                    color: "#cbd5e1",
-                    border: "1px solid #334155",
-                    padding: "15px 20px",
-                    borderRadius: "12px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Change Document
-                </button>
-              </div>
-            )}
-
-            {/* LOADING */}
-
-            {loading && (
-              <div
-                style={{
-                  marginTop: "25px",
-                  padding: "20px",
-                  background: "#0b111b",
-                  borderRadius: "12px",
-                  textAlign: "center",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#10b981",
-                    fontSize: "14px",
-                    fontWeight: 700,
-                    marginBottom: "10px",
-                  }}
-                >
-                  DeepShield AI is analyzing your document
-                </div>
-
-                <div
-                  style={{
-                    width: "100%",
-                    height: "5px",
-                    background: "#1e293b",
-                    borderRadius: "10px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "70%",
-                      height: "100%",
-                      background: "#10b981",
-                      borderRadius: "10px",
-                    }}
-                  />
-                </div>
-
-                <p
-                  style={{
-                    color: "#64748b",
-                    fontSize: "12px",
-                    marginTop: "12px",
-                  }}
-                >
-                  Extracting information and checking security indicators...
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* ================================= */}
-          {/* RIGHT PANEL */}
-          {/* ================================= */}
-
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-            }}
-          >
-            {/* DOCUMENT CAPABILITIES */}
-
-            <div
-              style={{
-                background: "#101620",
-                border: "1px solid #1e293b",
-                borderRadius: "20px",
-                padding: "25px",
-              }}
-            >
-              <h3 style={{ margin: "0 0 20px", fontSize: "18px" }}>
-                Document Security Capabilities
-              </h3>
-
-              {[
-                [
-                  "📑",
-                  "Content Analysis",
-                  "Analyze document contents and identify suspicious information",
-                ],
-                [
-                  "🛡️",
-                  "Threat Detection",
-                  "Identify potential security risks and suspicious indicators",
-                ],
-                [
-                  "🔍",
-                  "Risk Assessment",
-                  "Evaluate the document and generate a risk score",
-                ],
-                [
-                  "🤖",
-                  "AI Intelligence",
-                  "Generate an understandable explanation of the findings",
-                ],
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    gap: "13px",
-                    marginBottom: "20px",
-                    alignItems: "start",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      minWidth: "40px",
-                      borderRadius: "12px",
-                      background: "#162a24",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {item[0]}
-                  </div>
-
-                  <div>
-                    <h4
-                      style={{
-                        margin: "0 0 6px",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {item[1]}
-                    </h4>
-
-                    <p
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        color: "#94a3b8",
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      {item[2]}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* ANALYSIS PROCESS */}
-
-            <div
-              style={{
-                background: "#101620",
-                border: "1px solid #1e293b",
-                borderRadius: "20px",
-                padding: "25px",
-              }}
-            >
-              <h3 style={{ margin: "0 0 20px", fontSize: "18px" }}>
-                Analysis Process
-              </h3>
-
-              {[
-                [
-                  "01",
-                  "Document Processing",
-                  "Uploaded document is processed",
-                ],
-                [
-                  "02",
-                  "Content Extraction",
-                  "Text and relevant content are extracted",
-                ],
-                [
-                  "03",
-                  "Security Inspection",
-                  "Content is evaluated for suspicious indicators",
-                ],
-                [
-                  "04",
-                  "Risk Assessment",
-                  "Verdict and risk score are generated",
-                ],
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: "flex",
-                    gap: "13px",
-                    marginBottom: "18px",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#10b981",
-                      background: "#052e24",
-                      borderRadius: "9px",
-                      padding: "8px",
-                      height: "fit-content",
-                      fontSize: "12px",
-                      fontWeight: 800,
-                    }}
-                  >
-                    {item[0]}
-                  </div>
-
-                  <div>
-                    <h4
-                      style={{
-                        margin: "0 0 5px",
-                        fontSize: "13px",
-                      }}
-                    >
-                      {item[1]}
-                    </h4>
-
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "#64748b",
-                        fontSize: "12px",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {item[2]}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* SECURITY TIP */}
-
-            <div
-              style={{
-                background: "#11251f",
-                border: "1px solid #14532d",
-                borderRadius: "16px",
-                padding: "20px",
-              }}
-            >
-              <h4
-                style={{
-                  color: "#10b981",
-                  margin: "0 0 10px",
-                  fontSize: "14px",
-                }}
-              >
-                Security Tip
-              </h4>
-
-              <p
-                style={{
-                  color: "#a7f3d0",
-                  fontSize: "12px",
-                  lineHeight: 1.7,
-                  margin: 0,
-                }}
-              >
-                Documents can contain deceptive links, suspicious content,
-                embedded objects, or misleading information. Always verify
-                documents from unknown sources before opening links or
-                interacting with their contents.
-              </p>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* ================================= */}
-        {/* ANALYSIS RESULTS */}
-        {/* ================================= */}
+        </section>
+
+        {/* SECURITY ASSESSMENT */}
 
         {result && (
-          <div style={{ marginTop: "35px" }}>
+          <section className="mt-14 border-t border-[#d9ddd3] pt-9">
+
             {/* RESULTS HEADER */}
 
-            <div
-              style={{
-                marginBottom: "25px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: "15px",
-              }}
-            >
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <div
-                  style={{
-                    color: "#10b981",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "2px",
-                    marginBottom: "8px",
-                  }}
-                >
+                <p className="text-[10px] font-bold tracking-[2.5px] text-[#849184]">
                   DEEPSHIELD INTELLIGENCE
-                </div>
-
-                <h2 style={{ margin: 0, fontSize: "28px" }}>
-                  Security Analysis Report
+                </p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-[28px]">
+                  Security Assessment
                 </h2>
+                <p className="mt-2 text-sm text-[#849087]">
+                  Analysis results for {result.filename || file?.name || "uploaded document"}
+                </p>
               </div>
 
-              <div
-                style={{
-                  background: "#052e24",
-                  color: "#10b981",
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  fontSize: "12px",
-                  fontWeight: 800,
-                }}
-              >
+              <div className="flex items-center gap-2 border border-[#d7dfd4] bg-[#edf1e9] px-4 py-2.5 text-[10px] font-bold tracking-wider text-[#607b64]">
+                <CheckCircle2 size={14} />
                 ANALYSIS COMPLETED
               </div>
             </div>
 
-            {/* VERDICT CARDS */}
+            {/* VERDICT HERO */}
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit, minmax(250px, 1fr))",
-                gap: "20px",
-                marginBottom: "20px",
-              }}
-            >
-              {/* VERDICT */}
+            <div className="relative grid overflow-hidden bg-[#203a2e] text-[#f5f5ef] lg:grid-cols-[1fr_300px]">
+              <div className="relative z-10 p-7 md:p-10">
+                <div className="flex items-center gap-3 text-[#c0d2b5]">
+                  <ShieldCheck size={19} />
+                  <span className="text-[11px] font-bold tracking-[2px]">
+                    OVERALL SECURITY VERDICT
+                  </span>
+                </div>
 
-              <div
-                style={{
-                  background: "#101620",
-                  border: "1px solid #1e293b",
-                  borderRadius: "20px",
-                  padding: "25px",
-                }}
-              >
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "1px",
-                    margin: "0 0 15px",
-                  }}
-                >
-                  SECURITY VERDICT
-                </p>
-
-                <div
-                  style={{
-                    display: "inline-block",
-                    padding: "12px 18px",
-                    borderRadius: "12px",
-                    background: isSafe ? "#052e24" : "#301819",
-                    color: isSafe ? "#10b981" : "#f87171",
-                    fontSize: "18px",
-                    fontWeight: 800,
-                    marginBottom: "15px",
-                  }}
-                >
+                <h3 className="mt-7 text-4xl font-bold tracking-tight md:text-[48px]">
                   {result.prediction || "UNKNOWN"}
-                </div>
+                </h3>
 
-                <p
-                  style={{
-                    color: "#64748b",
-                    fontSize: "13px",
-                    margin: 0,
-                  }}
-                >
-                  Verdict generated from document security analysis.
-                </p>
-              </div>
-
-              {/* RISK SCORE */}
-
-              <div
-                style={{
-                  background: "#101620",
-                  border: "1px solid #1e293b",
-                  borderRadius: "20px",
-                  padding: "25px",
-                }}
-              >
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "1px",
-                    margin: "0 0 15px",
-                  }}
-                >
-                  RISK SCORE
+                <p className="mt-5 max-w-[700px] text-sm leading-7 text-[#d0d9d0]">
+                  {isSafe
+                    ? "No major security indicators were reported in this document analysis. Review the extracted content and findings before relying on the document."
+                    : "The document analysis returned indicators that require your attention. Review the reported findings and extracted content carefully."}
                 </p>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: "8px",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: "42px",
-                      fontWeight: 800,
-                      color: riskColor,
-                    }}
-                  >
-                    {riskScore}
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <span className="border border-white/20 bg-white/5 px-4 py-2.5 text-[10px] font-bold tracking-wider">
+                    {result.risk_level || "RISK LEVEL UNKNOWN"}
                   </span>
 
-                  <span
-                    style={{
-                      color: "#64748b",
-                      fontSize: "16px",
-                    }}
-                  >
-                    /100
+                  <span className="border border-white/20 bg-white/5 px-4 py-2.5 text-[10px] font-bold tracking-wider">
+                    {findings.length} FINDING(S)
                   </span>
-                </div>
 
-                <p
-                  style={{
-                    color: riskColor,
-                    fontWeight: 700,
-                    fontSize: "13px",
-                    margin: "5px 0 15px",
-                  }}
-                >
-                  {result.risk_level || "UNKNOWN RISK"}
-                </p>
-
-                <div
-                  style={{
-                    height: "8px",
-                    background: "#1e293b",
-                    borderRadius: "20px",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${riskScore}%`,
-                      height: "100%",
-                      background: riskColor,
-                      borderRadius: "20px",
-                      transition: "width 0.5s",
-                    }}
-                  />
+                  <span className="border border-white/20 bg-white/5 px-4 py-2.5 text-[10px] font-bold tracking-wider">
+                    {fileExtension} DOCUMENT
+                  </span>
                 </div>
               </div>
 
-              {/* DOCUMENT INFO */}
-
-              <div
-                style={{
-                  background: "#101620",
-                  border: "1px solid #1e293b",
-                  borderRadius: "20px",
-                  padding: "25px",
-                }}
-              >
-                <p
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    letterSpacing: "1px",
-                    margin: "0 0 15px",
-                  }}
-                >
-                  DOCUMENT INFORMATION
-                </p>
+              <div className="relative flex items-center justify-center overflow-hidden border-t border-white/10 p-8 lg:border-l lg:border-t-0">
+                <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full border border-white/10" />
+                <div className="absolute -right-5 -top-5 h-48 w-48 rounded-full border border-white/10" />
 
                 <div
+                  className="relative flex h-52 w-52 items-center justify-center rounded-full"
                   style={{
-                    fontSize: "25px",
-                    fontWeight: 800,
-                    color: "#10b981",
-                    marginBottom: "10px",
+                    background: `conic-gradient(${riskColor} ${riskScore * 3.6}deg, rgba(255,255,255,0.13) 0deg)`,
                   }}
                 >
-                  {fileExtension}
+                  <div className="flex h-[calc(100%-12px)] w-[calc(100%-12px)] flex-col items-center justify-center rounded-full bg-[#203a2e]">
+                    <span className="text-[10px] font-bold tracking-[2px] text-[#c0d2b5]">
+                      RISK SCORE
+                    </span>
+                    <span className="mt-1 text-[52px] font-bold leading-none">
+                      {riskScore}
+                    </span>
+                    <span className="mt-2 text-xs text-[#c0d2b5]">
+                      out of 100
+                    </span>
+                  </div>
                 </div>
+              </div>
+            </div>
 
-                <p
-                  style={{
-                    color: "#64748b",
-                    fontSize: "13px",
-                    margin: "0 0 8px",
-                    wordBreak: "break-all",
-                  }}
-                >
-                  {result.filename || file?.name}
+            {/* METRICS STRIP */}
+
+            <div className="grid grid-cols-1 border-b border-[#d9ddd3] bg-[#eceee7] sm:grid-cols-3">
+              <div className="border-b border-[#d9ddd3] p-5 sm:border-b-0 sm:border-r">
+                <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                  RISK CLASSIFICATION
                 </p>
+                <p className="mt-4 text-xl font-bold">
+                  {result.risk_level || "UNKNOWN"}
+                </p>
+                <p className="mt-2 text-xs text-[#829087]">
+                  Based on returned risk score
+                </p>
+              </div>
 
-                <p
-                  style={{
-                    color: "#64748b",
-                    fontSize: "13px",
-                    margin: 0,
-                  }}
-                >
-                  {file ? (file.size / 1024).toFixed(2) : "0"} KB
+              <div className="border-b border-[#d9ddd3] p-5 sm:border-b-0 sm:border-r">
+                <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                  DOCUMENT STATUS
+                </p>
+                <p className="mt-4 text-xl font-bold">
+                  {result.detected === false ? "Not detected" : "Processed"}
+                </p>
+                <p className="mt-2 text-xs text-[#829087]">
+                  Document analysis response
+                </p>
+              </div>
+
+              <div className="p-5">
+                <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                  SECURITY INDICATORS
+                </p>
+                <p className="mt-4 text-xl font-bold">
+                  {findings.length} finding(s)
+                </p>
+                <p className="mt-2 text-xs text-[#829087]">
+                  Returned by the analysis engine
                 </p>
               </div>
             </div>
 
-            {/* ================================= */}
-            {/* SECURITY FINDINGS */}
-            {/* ================================= */}
+            {/* INSPECTION DETAILS */}
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "minmax(0, 1.4fr) minmax(280px, 1fr)",
-                gap: "20px",
-                marginBottom: "20px",
-              }}
-            >
-              {/* FINDINGS */}
+            <div className="mt-12">
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                    INSPECTION DETAILS
+                  </p>
+                  <h3 className="mt-2 text-xl font-bold">
+                    What did we find?
+                  </h3>
+                </div>
 
-              <div
-                style={{
-                  background: "#101620",
-                  border: "1px solid #1e293b",
-                  borderRadius: "20px",
-                  padding: "25px",
-                }}
-              >
-                <h3 style={{ margin: "0 0 20px", fontSize: "18px" }}>
-                  Security Findings
-                </h3>
+                <span className="text-xs text-[#849087]">
+                  Document content and security indicators
+                </span>
+              </div>
 
-                {findings.length > 0 ? (
-                  findings.map((finding, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        background: "#2b1518",
-                        border: "1px solid #7f1d1d",
-                        borderRadius: "12px",
-                        padding: "15px",
-                        marginBottom: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          color: "#f87171",
-                          fontWeight: 700,
-                          fontSize: "14px",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        ⚠ Finding {index + 1}
-                      </div>
+              <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
 
-                      <p
-                        style={{
-                          color: "#fca5a5",
-                          fontSize: "13px",
-                          lineHeight: 1.6,
-                          margin: 0,
-                        }}
-                      >
-                        {finding.description ||
-                          finding.message ||
-                          JSON.stringify(finding)}
-                      </p>
+                {/* SECURITY FINDINGS */}
 
-                      {finding.severity && (
+                <div className="border border-[#dce0d6] bg-[#fafaf6]">
+                  <div className="flex items-center justify-between border-b border-[#dce0d6] px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle size={18} className="text-[#a47c37]" />
+                      <h4 className="text-sm font-bold">Security Findings</h4>
+                    </div>
+                    <span className="text-[9px] font-bold tracking-[2px] text-[#929b91]">
+                      INSPECTION
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 p-5">
+                    {findings.length > 0 ? (
+                      findings.map((finding, index) => (
                         <div
-                          style={{
-                            marginTop: "10px",
-                            color: "#f87171",
-                            fontSize: "11px",
-                            fontWeight: 700,
-                          }}
+                          key={index}
+                          className="border border-[#e5d0c9] bg-[#f8eeea] p-4"
                         >
-                          SEVERITY: {finding.severity}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div
-                    style={{
-                      background: "#052e24",
-                      border: "1px solid #14532d",
-                      borderRadius: "14px",
-                      padding: "20px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: "#10b981",
-                        fontWeight: 800,
-                        fontSize: "15px",
-                        marginBottom: "10px",
-                      }}
-                    >
-                      ✓ No Security Findings
-                    </div>
+                          <div className="flex items-center gap-2 text-sm font-bold text-[#a65345]">
+                            <AlertTriangle size={15} />
+                            Finding {index + 1}
+                          </div>
 
-                    <p
-                      style={{
-                        color: "#a7f3d0",
-                        fontSize: "13px",
-                        lineHeight: 1.7,
-                        margin: 0,
-                      }}
-                    >
-                      No major security indicators were detected during this
-                      analysis.
+                          <p className="mt-3 text-xs leading-6 text-[#8d6259]">
+                            {finding.description ||
+                              finding.message ||
+                              JSON.stringify(finding)}
+                          </p>
+
+                          {finding.severity && (
+                            <p className="mt-3 text-[10px] font-bold tracking-wider text-[#a65345]">
+                              SEVERITY: {finding.severity}
+                            </p>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex gap-4 border border-[#d9e2d5] bg-[#edf3e9] p-5">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center bg-[#dfe9da] text-[#5e7c62]">
+                          <CheckCircle2 size={23} />
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-bold text-[#3e6347]">
+                            No findings returned
+                          </p>
+                          <p className="mt-1 text-xs leading-6 text-[#7d917e]">
+                            No major indicators were reported by this scan.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <p className="pt-2 text-[11px] leading-5 text-[#929b91]">
+                      An absence of findings is not a guarantee that the
+                      document is safe. Verify unfamiliar sources independently.
                     </p>
                   </div>
-                )}
-              </div>
+                </div>
 
-              {/* DOCUMENT CONTENT */}
+                {/* EXTRACTED CONTENT */}
 
-              <div
-                style={{
-                  background: "#101620",
-                  border: "1px solid #1e293b",
-                  borderRadius: "20px",
-                  padding: "25px",
-                }}
-              >
-                <h3 style={{ margin: "0 0 20px", fontSize: "18px" }}>
-                  Document Content
-                </h3>
-
-                {extractedText ? (
-                  <div
-                    style={{
-                      background: "#0b111b",
-                      border: "1px solid #263244",
-                      borderRadius: "12px",
-                      padding: "15px",
-                      maxHeight: "350px",
-                      overflowY: "auto",
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                      color: "#cbd5e1",
-                      fontSize: "13px",
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    {extractedText}
+                <div className="border border-[#dce0d6] bg-[#fafaf6]">
+                  <div className="flex items-center justify-between border-b border-[#dce0d6] px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <FileText size={18} className="text-[#5d7a63]" />
+                      <h4 className="text-sm font-bold">Extracted Content</h4>
+                    </div>
+                    <span className="text-[9px] font-bold tracking-[2px] text-[#929b91]">
+                      DOCUMENT TEXT
+                    </span>
                   </div>
-                ) : (
-                  <div
-                    style={{
-                      background: "#0b111b",
-                      borderRadius: "12px",
-                      padding: "20px",
-                      color: "#64748b",
-                      fontSize: "13px",
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    Document text preview is not available in the API response.
-                    The security analysis is displayed below.
+
+                  <div className="p-5">
+                    {extractedText ? (
+                      <div className="max-h-[350px] overflow-y-auto border border-[#e0e3da] bg-[#f3f4ed] p-4 text-xs leading-7 text-[#53665a] [overflow-wrap:anywhere]">
+                        {extractedText}
+                      </div>
+                    ) : (
+                      <div className="flex min-h-[150px] flex-col items-center justify-center border border-dashed border-[#d6ddd2] bg-[#f3f4ed] px-5 text-center">
+                        <FileSearch size={27} className="text-[#91a18f]" />
+                        <p className="mt-3 text-sm font-semibold text-[#647669]">
+                          No extracted text available
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-[#929b91]">
+                          The API response did not include a document text preview.
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
-            {/* ================================= */}
-            {/* AI ASSISTANT */}
-            {/* ================================= */}
+            {/* AI ASSISTANT SUMMARY */}
 
-            <div
-              style={{
-                background: "#101620",
-                border: "1px solid #1e293b",
-                borderRadius: "20px",
-                padding: "25px",
-                marginBottom: "20px",
-              }}
-            >
-              {/* ASSISTANT HEADER */}
+            <div className="mt-6 border border-[#d7dfd4] bg-[#eaf0e7]">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#d7dfd4] px-5 py-5 md:px-7">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center bg-[#dce8d9] text-[#58745d]">
+                    <Sparkles size={21} />
+                  </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "12px",
-                  marginBottom: "20px",
-                }}
-              >
-                <div
-                  style={{
-                    width: "45px",
-                    height: "45px",
-                    background: "#052e24",
-                    border: "1px solid #14532d",
-                    borderRadius: "13px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "20px",
-                  }}
-                >
-                  🤖
+                  <div>
+                    <h3 className="text-base font-bold">
+                      DeepShield AI Assistant
+                    </h3>
+                    <p className="mt-1 text-[10px] font-semibold tracking-wider text-[#7d917e]">
+                      AI-GENERATED SECURITY EXPLANATION
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 style={{ margin: 0, fontSize: "18px" }}>
-                    DeepShield AI Assistant
-                  </h3>
+                <span className="border border-[#d2ddcf] bg-[#f4f6f0] px-3 py-2 text-[9px] font-bold tracking-wider text-[#69806a]">
+                  ANALYSIS SUMMARY
+                </span>
+              </div>
 
-                  <p
-                    style={{
-                      color: "#10b981",
-                      fontSize: "12px",
-                      margin: "5px 0 0",
-                    }}
+              <div className="p-5 md:p-7">
+                <div className="border border-[#d8e0d4] bg-[#f7f8f3] p-5 text-sm leading-8 text-[#596c5e]">
+                  {result.assistant?.summary ||
+                    "AI assistant summary is not available."}
+                </div>
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={listenToReport}
+                    className="inline-flex items-center gap-2 bg-[#294638] px-5 py-3 text-xs font-bold tracking-wide text-white hover:bg-[#365844]"
                   >
-                    AI-generated security explanation
-                  </p>
+                    <Volume2 size={15} />
+                    LISTEN
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={copyReport}
+                    className="inline-flex items-center gap-2 border border-[#cbd7c8] bg-[#f4f6f0] px-5 py-3 text-xs font-bold tracking-wide text-[#4e6854] hover:bg-[#e9eee5]"
+                  >
+                    <Copy size={15} />
+                    COPY REPORT
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={analyzeAgain}
+                    className="inline-flex items-center gap-2 border border-[#cbd7c8] bg-[#f4f6f0] px-5 py-3 text-xs font-bold tracking-wide text-[#4e6854] hover:bg-[#e9eee5]"
+                  >
+                    <RefreshCw size={15} />
+                    ANALYZE AGAIN
+                  </button>
+
+                  {copyMessage && (
+                    <span className="text-xs font-semibold text-[#58745d]">
+                      {copyMessage}
+                    </span>
+                  )}
                 </div>
-              </div>
-
-              {/* SUMMARY */}
-
-              <div
-                style={{
-                  background: "#0b111b",
-                  border: "1px solid #263244",
-                  borderRadius: "14px",
-                  padding: "20px",
-                  lineHeight: 1.8,
-                  fontSize: "14px",
-                  color: "#cbd5e1",
-                }}
-              >
-                {result.assistant?.summary ||
-                  "AI assistant summary is not available."}
-              </div>
-
-              {/* ACTION BUTTONS */}
-
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "12px",
-                  marginTop: "20px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={listenToReport}
-                  style={{
-                    background: "#052e24",
-                    border: "1px solid #14532d",
-                    color: "#10b981",
-                    padding: "12px 18px",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  🔊 Listen
-                </button>
-
-                <button
-                  type="button"
-                  onClick={copyReport}
-                  style={{
-                    background: "#1e293b",
-                    border: "1px solid #334155",
-                    color: "#cbd5e1",
-                    padding: "12px 18px",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  📋 Copy Report
-                </button>
-
-                <button
-                  type="button"
-                  onClick={analyzeAgain}
-                  style={{
-                    background: "#1e293b",
-                    border: "1px solid #334155",
-                    color: "#cbd5e1",
-                    padding: "12px 18px",
-                    borderRadius: "10px",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                  }}
-                >
-                  ↻ Analyze Again
-                </button>
               </div>
             </div>
 
-            {/* ================================= */}
             {/* TECHNICAL DETAILS */}
-            {/* ================================= */}
 
-            <details
-              style={{
-                background: "#101620",
-                border: "1px solid #1e293b",
-                borderRadius: "16px",
-                padding: "20px",
-              }}
-            >
-              <summary
-                style={{
-                  cursor: "pointer",
-                  fontWeight: 700,
-                  color: "#94a3b8",
-                }}
-              >
-                View Technical Analysis Details
+            <details className="mt-6 border border-[#dce0d6] bg-[#fafaf6]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-5">
+                <div className="flex items-center gap-3">
+                  <FileCheck2 size={18} className="text-[#718a73]" />
+                  <span className="text-sm font-bold">
+                    View Technical Analysis Details
+                  </span>
+                </div>
+
+                <span className="text-[10px] font-bold tracking-wider text-[#849184]">
+                  JSON RESPONSE
+                </span>
               </summary>
 
-              <pre
-                style={{
-                  marginTop: "20px",
-                  background: "#080b12",
-                  padding: "20px",
-                  borderRadius: "12px",
-                  overflowX: "auto",
-                  color: "#10b981",
-                  fontSize: "12px",
-                  lineHeight: 1.6,
-                }}
-              >
-                {JSON.stringify(result, null, 2)}
-              </pre>
+              <div className="border-t border-[#dce0d6] p-5">
+                <pre className="max-h-[450px] overflow-auto bg-[#203a2e] p-5 text-xs leading-6 text-[#d5e4d0]">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+              </div>
             </details>
-          </div>
+          </section>
         )}
 
-        {/* ================================= */}
-        {/* FOOTER */}
-        {/* ================================= */}
+        {/* SUPPORTING INFORMATION */}
+        <section className="mt-8">
+          {/* INFORMATION PANEL */}
 
-        <div
-          style={{
-            borderTop: "1px solid #1e293b",
-            marginTop: "40px",
-            paddingTop: "20px",
-            textAlign: "center",
-            color: "#475569",
-            fontSize: "12px",
-          }}
-        >
-          DEEPSHIELD AI • Intelligent Multimodal Security Analysis
-        </div>
+          <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-3">
+
+            <div className="border border-[#dce0d6] bg-[#fafaf6] p-5 md:p-6">
+              <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                WHAT WE INSPECT
+              </p>
+
+              <h3 className="mb-6 mt-2 text-lg font-bold">
+                Document Security
+              </h3>
+
+              <div className="space-y-6">
+                {capabilities.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <div key={item.title} className="flex gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-[#e9eee5] text-[#5d7a63]">
+                        <Icon size={19} strokeWidth={1.7} />
+                      </div>
+
+                      <div>
+                        <h4 className="text-sm font-bold">{item.title}</h4>
+                        <p className="mt-1 text-xs leading-5 text-[#849087]">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="border border-[#dce0d6] bg-[#fafaf6] p-5 md:p-6">
+              <p className="text-[10px] font-bold tracking-[2px] text-[#849184]">
+                HOW IT WORKS
+              </p>
+
+              <h3 className="mb-6 mt-2 text-lg font-bold">
+                Analysis Process
+              </h3>
+
+              <div className="space-y-5">
+                {processSteps.map((step) => (
+                  <div key={step[0]} className="flex gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-[#e9eee5] text-[11px] font-bold text-[#5d7a63]">
+                      {step[0]}
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-bold">{step[1]}</h4>
+                      <p className="mt-1 text-[11px] leading-5 text-[#849087]">
+                        {step[2]}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border border-[#d9dfd3] bg-[#eaf0e6] p-5">
+              <div className="flex items-center gap-2 text-[#58745d]">
+                <LockKeyhole size={16} />
+                <h4 className="text-xs font-bold tracking-wide">
+                  SECURITY REMINDER
+                </h4>
+              </div>
+
+              <p className="mt-3 text-xs leading-6 text-[#718374]">
+                Documents may contain deceptive links, suspicious content or
+                misleading information. Verify unfamiliar documents and their
+                sources before interacting with their contents.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FOOTER */}
+
+        <footer className="mt-12 border-t border-[#d9ddd3] pt-6 text-center">
+          <p className="text-[10px] font-semibold tracking-[2px] text-[#98a196]">
+            DEEPSHIELD AI <span className="mx-2">·</span>
+            INTELLIGENT MULTIMODAL SECURITY ANALYSIS
+          </p>
+        </footer>
       </div>
-    </div>
+    </main>
   );
 }

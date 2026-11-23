@@ -144,11 +144,19 @@ def predict_photo(image_path):
     else:
         confidence_level = "LOW"
 
+    if risk_score >= 70:
+        risk_level = "HIGH RISK"
+    elif risk_score >= 40:
+        risk_level = "MEDIUM RISK"
+    else:
+        risk_level = "LOW RISK"
+
     return {
     "prediction": prediction,
     "confidence": round(confidence_percent, 2),
     "confidence_level": confidence_level,
     "risk_score": round(risk_score, 2),
+    "risk_level": risk_level,
     "device": str(DEVICE)
 
     }   

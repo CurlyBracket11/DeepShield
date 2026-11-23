@@ -36,3 +36,10 @@ notebooks/video/models/video/*.pth
 # Python cache
 __pycache__/
 *.pyc
+
+# Local virtual environment
+.venv/
+
+# Backup files
+*.backup
+*.backup.*

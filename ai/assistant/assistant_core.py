@@ -1,5 +1,5 @@
-# ============================================================
-# DEEPSHIELD-AI — AI SECURITY ASSISTANT CORE
+﻿# ============================================================
+# DEEPSHIELD-AI â€” AI SECURITY ASSISTANT CORE
 # ============================================================
 
 from typing import Any, Dict, List, Optional
@@ -23,7 +23,7 @@ class DeepShieldAssistant:
         self.name = ASSISTANT_NAME
 
         print("=" * 70)
-        print("DEEPSHIELD-AI — SECURITY ASSISTANT")
+        print("DEEPSHIELD-AI â€” SECURITY ASSISTANT")
         print("=" * 70)
 
         print(
@@ -156,7 +156,7 @@ class DeepShieldAssistant:
                 f"I analyzed the {modality} and found "
                 f"significant security concerns. "
                 f"The current risk score is "
-                f"{risk_score:.0f} out of 100."
+                f"{risk_score:.2f} out of 100."
             )
 
         elif category == "HIGH ATTENTION":
@@ -165,7 +165,7 @@ class DeepShieldAssistant:
                 f"The {modality} requires careful review. "
                 f"I detected security indicators that "
                 f"raise its risk score to "
-                f"{risk_score:.0f} out of 100."
+                f"{risk_score:.2f} out of 100."
             )
 
         elif category == "CAUTION":
@@ -175,7 +175,7 @@ class DeepShieldAssistant:
                 f"but I detected some indicators that "
                 f"deserve attention. "
                 f"The risk score is "
-                f"{risk_score:.0f} out of 100."
+                f"{risk_score:.2f} out of 100."
             )
 
         else:
@@ -387,7 +387,7 @@ class DeepShieldAssistant:
             return (
                 f"I would not consider this fully safe. "
                 f"The analysis produced a risk score of "
-                f"{summary['risk_score']:.0f} out of 100 "
+                f"{summary['risk_score']:.2f} out of 100 "
                 f"with a {summary['risk_level']} classification. "
                 f"I recommend verifying it before taking action."
             )
@@ -442,7 +442,7 @@ class DeepShieldAssistant:
 
             return (
                 f"The current risk score is "
-                f"{summary['risk_score']:.0f} out of 100, "
+                f"{summary['risk_score']:.2f} out of 100, "
                 f"classified as {summary['risk_level']}."
             )
 
@@ -590,3 +590,4 @@ def analyze_result(result):
 
         "summary": response
     }
+
