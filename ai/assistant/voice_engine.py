@@ -1,10 +1,15 @@
-import win32com.client
 import threading
+import sys
 
 
 class VoiceEngine:
 
     def __init__(self):
+        if sys.platform != "win32":
+            raise RuntimeError("Windows SAPI voice is available only on Windows.")
+
+        import win32com.client
+
         self.lock = threading.Lock()
         self.speaker = win32com.client.Dispatch("SAPI.SpVoice")
 
